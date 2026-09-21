@@ -1,0 +1,20 @@
+[
+  { "name": "replaces a member", "target": {"a": "b"}, "patch": {"a": "c"}, "result": {"a": "c"} },
+  { "name": "adds a member", "target": {"a": "b"}, "patch": {"b": "c"}, "result": {"a": "b", "b": "c"} },
+  { "name": "null removes", "target": {"a": "b"}, "patch": {"a": null}, "result": {} },
+  { "name": "null removes one of two", "target": {"a": "b", "b": "c"}, "patch": {"a": null}, "result": {"b": "c"} },
+  { "name": "array is replaced by a value", "target": {"a": ["b"]}, "patch": {"a": "c"}, "result": {"a": "c"} },
+  { "name": "value is replaced by an array", "target": {"a": "c"}, "patch": {"a": ["b"]}, "result": {"a": ["b"]} },
+  { "name": "nested merge and removal", "target": {"a": {"b": "c"}}, "patch": {"a": {"b": "d", "c": null}}, "result": {"a": {"b": "d"}} },
+  { "name": "arrays are replaced whole", "target": {"a": [{"b": "c"}]}, "patch": {"a": [1]}, "result": {"a": [1]} },
+  { "name": "array patch replaces an array target", "target": ["a", "b"], "patch": ["c", "d"], "result": ["c", "d"] },
+  { "name": "array patch replaces an object", "target": {"a": "b"}, "patch": ["c"], "result": ["c"] },
+  { "name": "null patch replaces", "target": {"a": "foo"}, "patch": null, "result": null },
+  { "name": "string patch replaces", "target": {"a": "foo"}, "patch": "bar", "result": "bar" },
+  { "name": "null member of the target stays", "target": {"e": null}, "patch": {"a": 1}, "result": {"e": null, "a": 1} },
+  { "name": "object patch over an array", "target": [1, 2], "patch": {"a": "b", "c": null}, "result": {"a": "b"} },
+  { "name": "nulls inside a new branch are dropped", "target": {}, "patch": {"a": {"bb": {"ccc": null}}}, "result": {"a": {"bb": {}}} },
+  { "name": "removing what is not there", "target": {"a": 1}, "patch": {"zz": null}, "result": {"a": 1} },
+  { "name": "numbers and flags", "target": {"price": 4.99, "on": false, "n": 1}, "patch": {"price": 2.49, "on": true}, "result": {"price": 2.49, "on": true, "n": 1} },
+  { "name": "deep balance override", "target": {"levels": 30, "rewards": {"free": [10, 20], "premium": {"skin": "neon", "coins": 500}}}, "patch": {"rewards": {"premium": {"coins": 750}}}, "result": {"levels": 30, "rewards": {"free": [10, 20], "premium": {"skin": "neon", "coins": 750}}} }
+]

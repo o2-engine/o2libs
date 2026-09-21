@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<files>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/o2libs/Core/JsonMergePatch.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections />
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/o2libs/Core/PlayerIdentity.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections>
+						<section name="PlayerIdentity" fullname="o2libs::PlayerIdentity" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="IObject" protection="0" />
+							</baseClasses>
+						</section>
+					</sections>
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/o2libs/Core/ServiceSettings.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections>
+						<section name="ServiceSettings" fullname="o2libs::ServiceSettings" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="ISerializable" protection="0" />
+							</baseClasses>
+						</section>
+					</sections>
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/o2libs/Core/Storage.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections>
+						<section name="IStorageBackend" fullname="o2libs::IStorageBackend" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="RefCounterable" protection="0" />
+							</baseClasses>
+						</section>
+						<section name="MemoryStorageBackend" fullname="o2libs::MemoryStorageBackend" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="IStorageBackend" protection="0" />
+							</baseClasses>
+						</section>
+						<section name="FileStorageBackend" fullname="o2libs::FileStorageBackend" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="IStorageBackend" protection="0" />
+							</baseClasses>
+						</section>
+						<section name="LocalStorageBackend" fullname="o2libs::LocalStorageBackend" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="IStorageBackend" protection="0" />
+							</baseClasses>
+						</section>
+						<section name="Storage" fullname="o2libs::Storage" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="IObject" protection="0" />
+							</baseClasses>
+						</section>
+					</sections>
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+</files>
+<parentProjects>
+	<project path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
+</parentProjects>

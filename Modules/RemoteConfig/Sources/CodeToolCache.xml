@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<files>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/RemoteConfig/Sources/o2libs/RemoteConfig/RemoteConfig.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections>
+						<section name="RemoteConfig" fullname="o2libs::RemoteConfig" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="IObject" protection="0" />
+							</baseClasses>
+						</section>
+					</sections>
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/RemoteConfig/Sources/o2libs/RemoteConfig/RemoteConfigClient.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections>
+						<section name="RemoteConfigClient" fullname="o2libs::RemoteConfigClient" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="RefCounterable" protection="0" />
+							</baseClasses>
+						</section>
+					</sections>
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/RemoteConfig/Sources/o2libs/RemoteConfig/RemoteConfigTransport.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections>
+						<section name="IRemoteConfigTransport" fullname="o2libs::IRemoteConfigTransport" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="RefCounterable" protection="0" />
+							</baseClasses>
+						</section>
+						<section name="HttpRemoteConfigTransport" fullname="o2libs::HttpRemoteConfigTransport" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="IRemoteConfigTransport" protection="0" />
+							</baseClasses>
+						</section>
+					</sections>
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+</files>
+<parentProjects>
+	<project path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
+	<project path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/CodeToolCache.xml" />
+	<project path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
+</parentProjects>
