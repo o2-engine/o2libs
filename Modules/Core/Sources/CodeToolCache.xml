@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <files>
-	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/o2libs/Core/JsonMergePatch.h">
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/Core/Sources/o2libs/Core/JsonMergePatch.h">
 		<globalNamespace name="" fullname="">
 			<sections>
 				<section name="o2libs" fullname="o2libs">
@@ -15,7 +15,7 @@
 			</usings>
 		</globalNamespace>
 	</file>
-	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/o2libs/Core/PlayerIdentity.h">
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/Core/Sources/o2libs/Core/PlayerIdentity.h">
 		<globalNamespace name="" fullname="">
 			<sections>
 				<section name="o2libs" fullname="o2libs">
@@ -39,7 +39,7 @@
 			</usings>
 		</globalNamespace>
 	</file>
-	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/o2libs/Core/ServiceSettings.h">
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/Core/Sources/o2libs/Core/ServiceSettings.h">
 		<globalNamespace name="" fullname="">
 			<sections>
 				<section name="o2libs" fullname="o2libs">
@@ -63,7 +63,7 @@
 			</usings>
 		</globalNamespace>
 	</file>
-	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/o2libs/Core/Storage.h">
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/Core/Sources/o2libs/Core/Storage.h">
 		<globalNamespace name="" fullname="">
 			<sections>
 				<section name="o2libs" fullname="o2libs">
@@ -121,5 +121,5 @@
 	</file>
 </files>
 <parentProjects>
-	<project path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
+	<project path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
 </parentProjects>

@@ -96,6 +96,16 @@ namespace o2libs
         void SetAttribute(const String& name, double value);
         void SetAttribute(const String& name, bool value);
 
+        // Puts a document in place of the config, over whatever the service says, until cleared.
+        // For tests of game code, debug menus and cheats; not stored, not reported as exposure
+        void SetLocalOverride(const String& key, const DataValue& config);
+
+        // Removes the local override of the config; an empty key removes all of them
+        void ClearLocalOverride(const String& key = String());
+
+        // Grows every time the configs change: a cheap way to notice it without subscribing
+        int GetRevision() const;
+
         // Removes all the stored answers and documents of this project
         void ClearCache();
 
@@ -118,6 +128,8 @@ namespace o2libs
         bool                mHasManifest = false;
         Map<String, Chain>  mActiveChains;    // What is in effect now: config -> document ids
         Map<String, DataDocument> mConfigs;   // The merged documents
+        Map<String, DataDocument> mOverrides; // Local overrides, beat mConfigs
+        int                 mRevision = 0;
         Map<String, String> mExperiments;
         Map<String, Vector<String>> mExposureByConfig;
 
@@ -155,6 +167,7 @@ namespace o2libs
         // Works out what is in effect at this moment and rebuilds the documents that changed
         void Rebuild();
         void Prune();
+        void NotifyChanged();
 
         void NoteExposure(const String& experiment);
         void FlushExposures();

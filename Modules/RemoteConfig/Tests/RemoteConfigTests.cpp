@@ -666,6 +666,35 @@ TEST(RemoteConfig, ConfigReadsIntoAnObject)
     EXPECT_FALSE(f.client->GetObject("nope", pass));
 }
 
+TEST(RemoteConfig, LocalOverrideBeatsTheServiceAndIsNotAnExposure)
+{
+    Fixture f;
+    f.Manifest(f.TwoTestsManifest());
+    f.transport->answers[String(service) + "/v1/events"] = "{}";
+    ASSERT_TRUE(f.Fetch());
+    int revision = f.client->GetRevision();
+
+    DataDocument mine;
+    ASSERT_TRUE(mine.LoadFromData(R"({"levels": 99})"));
+    f.client->SetLocalOverride("season_pass", mine);
+    f.client->SetLocalOverride("only_local", mine);
+
+    EXPECT_EQ(f.client->Get<int>("season_pass", "levels", 0), 99);
+    EXPECT_TRUE(f.client->HasConfig("only_local"));
+    EXPECT_EQ(f.client->GetRevision(), revision + 2);
+    EXPECT_EQ(f.changes, 3);
+
+    f.client->Update(f.client->exposureFlushPeriod);
+    f.transport->Flush();
+    EXPECT_EQ(f.transport->Count("POST", "/v1/events"), 0);
+
+    f.client->ClearLocalOverride("season_pass");
+    EXPECT_EQ(f.client->Get<int>("season_pass", "levels", 0), 30);
+
+    f.client->ClearLocalOverride();
+    EXPECT_FALSE(f.client->HasConfig("only_local"));
+}
+
 TEST(RemoteConfig, FacadeServesTheGameClient)
 {
     Fixture f;

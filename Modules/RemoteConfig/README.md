@@ -67,6 +67,11 @@ o2RemoteConfig.SetAttribute("level", 12.0);
 o2RemoteConfig.onChanged = []() { … };            // or RemoteConfig::OnChanged for several listeners
 ```
 
+A component that follows a config without subscribing compares `o2RemoteConfig.GetRevision()` with the one
+it read at - see `RotatorComponent` in the o2 template. Tests of game code put a document in place of a
+config with `SetLocalOverride(key, data)` / `ClearLocalOverride()`: no service, no network, and the same
+calls make a debug menu.
+
 `o2RemoteConfig` is the game's `RemoteConfigClient`. A client can also be made by hand with its own
 transport, storage and clock — that is how the tests run it.
 

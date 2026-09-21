@@ -100,6 +100,11 @@ namespace o2libs
         GetClient()->SetAttribute(name, (double)value);
     }
 
+    int RemoteConfig::GetRevision()
+    {
+        return GetClient()->GetRevision();
+    }
+
     void RemoteConfig::OnChanged(const Function<void()>& listener)
     {
         mListeners.Add(listener);

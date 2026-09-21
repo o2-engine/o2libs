@@ -505,8 +505,38 @@ namespace o2libs
             changed = true;
         }
 
-        if (changed && onChanged)
+        if (changed)
+            NotifyChanged();
+    }
+
+    void RemoteConfigClient::NotifyChanged()
+    {
+        mRevision++;
+        if (onChanged)
             onChanged();
+    }
+
+    int RemoteConfigClient::GetRevision() const
+    {
+        return mRevision;
+    }
+
+    void RemoteConfigClient::SetLocalOverride(const String& key, const DataValue& config)
+    {
+        DataDocument doc;
+        (DataValue&)doc = config;
+        mOverrides[key] = doc;
+        NotifyChanged();
+    }
+
+    void RemoteConfigClient::ClearLocalOverride(const String& key /*= String()*/)
+    {
+        if (key.IsEmpty())
+            mOverrides.Clear();
+        else
+            mOverrides.Remove(key);
+
+        NotifyChanged();
     }
 
     void RemoteConfigClient::Prune()
@@ -545,11 +575,14 @@ namespace o2libs
 
     bool RemoteConfigClient::HasConfig(const String& key) const
     {
-        return mConfigs.ContainsKey(key);
+        return mOverrides.ContainsKey(key) || mConfigs.ContainsKey(key);
     }
 
     const DataValue& RemoteConfigClient::GetConfig(const String& key)
     {
+        if (mOverrides.ContainsKey(key))
+            return mOverrides[key];
+
         if (!mConfigs.ContainsKey(key))
             return mNullValue;
 
@@ -662,8 +695,8 @@ namespace o2libs
         mExposed.Clear();
         mPendingExposures.SetArray();
 
-        if (had && onChanged)
-            onChanged();
+        if (had)
+            NotifyChanged();
     }
 
     void RemoteConfigClient::NoteExposure(const String& experiment)

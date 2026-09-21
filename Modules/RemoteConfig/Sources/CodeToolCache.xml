@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <files>
-	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/RemoteConfig/Sources/o2libs/RemoteConfig/RemoteConfig.h">
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/RemoteConfig/Sources/o2libs/RemoteConfig/RemoteConfig.h">
 		<globalNamespace name="" fullname="">
 			<sections>
 				<section name="o2libs" fullname="o2libs">
@@ -24,7 +24,7 @@
 			</usings>
 		</globalNamespace>
 	</file>
-	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/RemoteConfig/Sources/o2libs/RemoteConfig/RemoteConfigClient.h">
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/RemoteConfig/Sources/o2libs/RemoteConfig/RemoteConfigClient.h">
 		<globalNamespace name="" fullname="">
 			<sections>
 				<section name="o2libs" fullname="o2libs">
@@ -48,7 +48,7 @@
 			</usings>
 		</globalNamespace>
 	</file>
-	<file path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/RemoteConfig/Sources/o2libs/RemoteConfig/RemoteConfigTransport.h">
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/RemoteConfig/Sources/o2libs/RemoteConfig/RemoteConfigTransport.h">
 		<globalNamespace name="" fullname="">
 			<sections>
 				<section name="o2libs" fullname="o2libs">
@@ -82,7 +82,7 @@
 	</file>
 </files>
 <parentProjects>
-	<project path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
-	<project path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/Modules/Core/Sources/CodeToolCache.xml" />
-	<project path="/Users/andreizenkovich/work/zenkovich.space/gamesTemplate/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
+	<project path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
+	<project path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/Core/Sources/CodeToolCache.xml" />
+	<project path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
 </parentProjects>

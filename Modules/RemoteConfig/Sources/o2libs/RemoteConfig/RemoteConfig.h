@@ -65,6 +65,9 @@ namespace o2libs
         // Sets a numeric player attribute for targeting @SCRIPTABLE
         static void SetNumberAttribute(const String& name, float value);
 
+        // Grows every time the configs change: compare with the last seen one instead of subscribing @SCRIPTABLE
+        static int GetRevision();
+
         // Calls the function every time the configs change @SCRIPTABLE
         static void OnChanged(const Function<void()>& listener);
 
@@ -113,6 +116,7 @@ CLASS_METHODS_META(o2libs::RemoteConfig)
     FUNCTION().PUBLIC().SCRIPTABLE_ATTRIBUTE().SIGNATURE_STATIC(String, GetGroup, const String&);
     FUNCTION().PUBLIC().SCRIPTABLE_ATTRIBUTE().SIGNATURE_STATIC(void, SetAttribute, const String&, const String&);
     FUNCTION().PUBLIC().SCRIPTABLE_ATTRIBUTE().SIGNATURE_STATIC(void, SetNumberAttribute, const String&, float);
+    FUNCTION().PUBLIC().SCRIPTABLE_ATTRIBUTE().SIGNATURE_STATIC(int, GetRevision);
     FUNCTION().PUBLIC().SCRIPTABLE_ATTRIBUTE().SIGNATURE_STATIC(void, OnChanged, const Function<void()>&);
     FUNCTION().PUBLIC().SIGNATURE_STATIC(void, Update, float);
     FUNCTION().PUBLIC().SIGNATURE_STATIC(const Ref<RemoteConfigClient>&, GetClient);
