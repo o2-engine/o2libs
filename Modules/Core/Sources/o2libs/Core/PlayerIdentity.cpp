@@ -4,30 +4,43 @@
 #include "o2/Utils/Types/UID.h"
 #include "o2libs/Core/Storage.h"
 
+namespace o2
+{
+    DECLARE_SINGLETON(o2libs::PlayerIdentity);
+}
+
 namespace o2libs
 {
-    String PlayerIdentity::mId;
-    bool   PlayerIdentity::mIsNew = false;
-
     namespace
     {
         const char* storageKey = "core.playerId";
     }
 
-    String PlayerIdentity::GetId()
+    PlayerIdentity::PlayerIdentity(RefCounter* refCounter):
+        Singleton<PlayerIdentity>(refCounter)
+    {}
+
+    PlayerIdentity::~PlayerIdentity()
+    {
+        if (mInstance == this)
+            mInstance = nullptr;
+    }
+
+    const String& PlayerIdentity::GetId()
     {
         if (!mId.IsEmpty())
             return mId;
 
-        mId = Storage::Get(storageKey);
+        mId = o2Storage.Get(storageKey);
         if (mId.IsEmpty())
         {
             UID uid;
             uid.Randomize();
+
             mId = (String)uid.ToString();
             mIsNew = true;
 
-            Storage::Set(storageKey, mId);
+            o2Storage.Set(storageKey, mId);
         }
 
         return mId;
@@ -36,7 +49,7 @@ namespace o2libs
     void PlayerIdentity::SetId(const String& id)
     {
         mId = id;
-        Storage::Set(storageKey, mId);
+        o2Storage.Set(storageKey, mId);
     }
 
     bool PlayerIdentity::IsNew()
@@ -51,7 +64,3 @@ namespace o2libs
         mIsNew = false;
     }
 }
-// --- META ---
-
-DECLARE_CLASS(o2libs::PlayerIdentity, o2libs__PlayerIdentity);
-// --- END META ---

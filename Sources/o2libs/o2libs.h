@@ -14,15 +14,22 @@
 //     app->Launch();
 //
 // Both live in the entry points, not in the game's application class: a script-only game on a stock
-// runtime gets its modules started without a line of C++. Modules pump themselves through o2Tasks.
+// runtime gets its modules started without a line of C++. Modules are singletons (o2RemoteConfig, o2Storage, ...) created here and pump themselves through o2Tasks.
 
 #if defined(O2LIBS_CORE)
+#include "o2libs/Core/PlayerIdentity.h"
+#include "o2libs/Core/Storage.h"
 extern void InitializeTypeso2libsCore();
 #endif
 
 #if defined(O2LIBS_REMOTE_CONFIG)
 #include "o2libs/RemoteConfig/RemoteConfig.h"
 extern void InitializeTypeso2libsRemoteConfig();
+#endif
+
+#if defined(O2LIBS_SAVES)
+#include "o2libs/Saves/PlayerSaves.h"
+extern void InitializeTypeso2libsSaves();
 #endif
 
 namespace o2libs
@@ -47,6 +54,9 @@ namespace o2libs
 #if defined(O2LIBS_REMOTE_CONFIG)
         InitializeTypeso2libsRemoteConfig();
 #endif
+#if defined(O2LIBS_SAVES)
+        InitializeTypeso2libsSaves();
+#endif
     }
 
     // Starts the modules that start by themselves; after the application is initialized. Does it
@@ -59,8 +69,17 @@ namespace o2libs
 
         started = true;
 
+#if defined(O2LIBS_CORE)
+        Storage::InitializeSingleton();
+        PlayerIdentity::InitializeSingleton();
+#endif
 #if defined(O2LIBS_REMOTE_CONFIG)
-        RemoteConfig::InitFromAssets();
+        RemoteConfig::InitializeSingleton();
+        o2RemoteConfig.InitializeFromAssets();
+#endif
+#if defined(O2LIBS_SAVES)
+        PlayerSaves::InitializeSingleton();
+        o2Saves.InitializeFromAssets();
 #endif
     }
 

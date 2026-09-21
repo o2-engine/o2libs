@@ -7,7 +7,8 @@ it is not compiled, not linked, and the lines that mention o2libs in the project
 | Module | Option | What it is |
 |---|---|---|
 | [Core](Modules/Core) | `O2LIBS_CORE` | Player identity, persistent key-value storage (files; `localStorage` in the browser), service settings, JSON merge patch. Pulled in by the modules that need it. |
-| [RemoteConfig](Modules/RemoteConfig) | `O2LIBS_REMOTE_CONFIG` | Remote configs, scheduled launches and A/B tests: the client of the o2 live-ops service. |
+| [RemoteConfig](Modules/RemoteConfig) | `O2LIBS_REMOTE_CONFIG` | Remote configs, scheduled launches and A/B tests: the client of the o2 live-ops service. `o2RemoteConfig` |
+| [Saves](Modules/Saves) | `O2LIBS_SAVES` | The player's save: named serializable sections, one JSON document in the writable folder of the application, synchronized with the service and editable on the portal. `o2Saves` |
 
 ## Attaching to a project
 
@@ -84,8 +85,11 @@ Modules/<Name>/
     README.md
 ```
 
-Everything is in the `o2libs` namespace, which is also what scripts see: a class with `@SCRIPTABLE`
-members is `o2libs.<Class>` in JavaScript with no binding code.
+Everything is in the `o2libs` namespace. A module's entry point is an engine-style singleton with its macro -
+`o2RemoteConfig`, `o2Saves`, `o2Storage`, `o2PlayerIdentity` - created by `O2LIBS_START`; there are no classes of
+static functions. Whatever talks to the network is a coroutine (`Coroutine<bool> Fetch()`, `Sync()`), awaited or
+left to finish by itself. The engine has no scriptable singletons, so a module gives scripts one plain object over
+its singleton, built the way the engine builds `o2.FileSystem`: `o2libs.RemoteConfig`, `o2libs.Saves`.
 
 ## Adding a module
 
@@ -105,8 +109,12 @@ Rules that keep modules optional and the portal's server builds working:
 - No new link flags and no third-party libraries without a very good reason: the portal links games
   against a prebuilt kit, and a new flag means a new kit for everybody. Browser facilities are reached
   with `EM_JS` (see `Core/Storage.cpp`), which needs none.
-- Network only through `o2Network`, behind an interface the tests can replace (see
-  `RemoteConfig/RemoteConfigTransport.h`): unit tests never touch the network.
+- Network only through `Core/ServiceTransport.h` (coroutines over `o2Network`), which the tests replace: unit
+  tests never touch the network. A coroutine that belongs to an object takes the object's `alive` flag as an
+  argument and looks at it before anything else and after every `co_await` - a coroutine starts later than it is
+  made and may outlive the object.
+- Code style is the engine's (`o2/Scene/Actor.h`): a banner comment over a class, a one-line comment over every
+  method, members aligned with a trailing comment, `public` fields - methods - `protected` types - fields - methods.
 
 ## Tests
 

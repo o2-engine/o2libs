@@ -13,11 +13,13 @@
 #include "o2/Application/Application.h"
 #endif
 
+namespace o2
+{
+    DECLARE_SINGLETON(o2libs::Storage);
+}
+
 namespace o2libs
 {
-    Ref<IStorageBackend> Storage::mBackend;
-    String               Storage::mApplicationName = "Default";
-
     MemoryStorageBackend::MemoryStorageBackend(RefCounter* refCounter)
     {
         SetRefCounter(refCounter);
@@ -114,14 +116,14 @@ namespace o2libs
         SetRefCounter(refCounter);
     }
 
-    String FileStorageBackend::PathOf(const String& key) const
+    String FileStorageBackend::GetKeyPath(const String& key) const
     {
         return mFolder + "/" + EscapeKey(key) + valueExtension;
     }
 
     bool FileStorageBackend::Read(const String& key, String& value) const
     {
-        String path = PathOf(key);
+        String path = GetKeyPath(key);
         if (!o2FileSystem.IsFileExist(path))
             return false;
 
@@ -135,7 +137,7 @@ namespace o2libs
             o2FileSystem.FolderCreate(mFolder);
 
         // Through a temporary file: a crash in the middle leaves the previous value
-        String path = PathOf(key);
+        String path = GetKeyPath(key);
         String temp = path + ".tmp";
         FileSystem::WriteFile(temp, value);
 
@@ -147,7 +149,7 @@ namespace o2libs
 
     void FileStorageBackend::Remove(const String& key)
     {
-        String path = PathOf(key);
+        String path = GetKeyPath(key);
         if (o2FileSystem.IsFileExist(path))
             o2FileSystem.FileDelete(path);
     }
@@ -178,8 +180,7 @@ namespace o2libs
     }
 
 #if defined(PLATFORM_WASM)
-    // Returns a malloc'ed string or 0. localStorage throws in private windows and when site data
-    // is blocked, hence the try blocks
+    // Returns a malloc'ed string or 0. localStorage throws in private windows, hence the try blocks
     EM_JS(char*, o2libs_storage_get, (const char* key), {
         try {
             var v = localStorage.getItem(UTF8ToString(key));
@@ -257,7 +258,17 @@ namespace o2libs
     }
 #endif
 
-    String Storage::Get(const String& key, const String& defaultValue /*= ""*/)
+    Storage::Storage(RefCounter* refCounter):
+        Singleton<Storage>(refCounter)
+    {}
+
+    Storage::~Storage()
+    {
+        if (mInstance == this)
+            mInstance = nullptr;
+    }
+
+    String Storage::Get(const String& key, const String& defaultValue /*= ""*/) const
     {
         String value;
         return GetBackend()->Read(key, value) ? value : defaultValue;
@@ -268,7 +279,7 @@ namespace o2libs
         GetBackend()->Write(key, value);
     }
 
-    bool Storage::Has(const String& key)
+    bool Storage::Has(const String& key) const
     {
         String value;
         return GetBackend()->Read(key, value);
@@ -279,7 +290,7 @@ namespace o2libs
         GetBackend()->Remove(key);
     }
 
-    Vector<String> Storage::GetKeys(const String& prefix)
+    Vector<String> Storage::GetKeys(const String& prefix) const
     {
         return GetBackend()->GetKeys(prefix);
     }
@@ -289,14 +300,14 @@ namespace o2libs
         mBackend = backend;
     }
 
-    const Ref<IStorageBackend>& Storage::GetBackend()
+    const Ref<IStorageBackend>& Storage::GetBackend() const
     {
         if (!mBackend)
         {
 #if defined(PLATFORM_WASM)
             mBackend = mmake<LocalStorageBackend>("o2libs/");
 #else
-            String folder = GetDefaultFolder();
+            String folder = GetWritableFolder();
             if (folder.IsEmpty())
                 mBackend = mmake<MemoryStorageBackend>();
             else
@@ -312,9 +323,9 @@ namespace o2libs
         mApplicationName = name;
     }
 
-    String Storage::GetDefaultFolder()
+    String Storage::GetWritableFolder() const
     {
-        auto env = [](const char* name) { const char* v = std::getenv(name); return String(v ? v : ""); };
+        auto env = [](const char* name) { const char* value = std::getenv(name); return String(value ? value : ""); };
 
         String base;
 
@@ -340,7 +351,3 @@ namespace o2libs
         return base + "/o2libs/" + mApplicationName;
     }
 }
-// --- META ---
-
-DECLARE_CLASS(o2libs::Storage, o2libs__Storage);
-// --- END META ---

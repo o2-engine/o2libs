@@ -29,8 +29,8 @@ The portal's Live-ops tab → **Connect** writes `Assets/LiveOps.json`:
 { "url": "https://…/liveops", "key": "o2c_…", "appVersion": "1.0", "build": 1 }
 ```
 
-`O2LIBS_START` reads it, brings up the stored configs and starts a fetch. Nothing else is needed; a
-game with its own rules calls `RemoteConfig::Init(url, key)` and `Fetch` itself. The key is not a
+`O2LIBS_START` creates the singleton, reads the asset, brings up the stored configs and starts a fetch. Nothing
+else is needed; a game with its own rules calls `o2RemoteConfig.Initialize(settings)` and `Fetch()` itself. The key is not a
 secret — it only says which project is asking.
 
 ## Scripts
@@ -64,7 +64,14 @@ o2RemoteConfig.GetObject("season_pass", pass);
 
 const DataValue& whole = o2RemoteConfig.GetConfig("season_pass");
 o2RemoteConfig.SetAttribute("level", 12.0);
-o2RemoteConfig.onChanged = []() { … };            // or RemoteConfig::OnChanged for several listeners
+o2RemoteConfig.onChanged = []() { … };
+
+// the network is a coroutine: await it, or let it finish by itself
+Coroutine<void> Refresh()
+{
+    bool fresh = co_await o2RemoteConfig.Fetch();
+    …
+}
 ```
 
 A component that follows a config without subscribing compares `o2RemoteConfig.GetRevision()` with the one
@@ -72,8 +79,8 @@ it read at - see `RotatorComponent` in the o2 template. Tests of game code put a
 config with `SetLocalOverride(key, data)` / `ClearLocalOverride()`: no service, no network, and the same
 calls make a debug menu.
 
-`o2RemoteConfig` is the game's `RemoteConfigClient`. A client can also be made by hand with its own
-transport, storage and clock — that is how the tests run it.
+`o2RemoteConfig` is the singleton, `o2libs::RemoteConfig::Instance()`. Tests make their own with a scripted
+transport, storage and clock, and destroy it with `DestroySingleton`.
 
 ## Exposure
 

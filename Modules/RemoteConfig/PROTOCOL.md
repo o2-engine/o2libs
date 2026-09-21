@@ -56,3 +56,16 @@ group it gave that player itself. A `4xx` means "never resend these".
 
 `o2libs/Core/JsonMergePatch` and the service's `merge.ts` are the same algorithm and run the same
 vectors: `Tests/merge-vectors.json`.
+
+## `POST <url>/v1/saves/sync` (the Saves module)
+
+```json
+{ "key": "o2c_…", "player": "…", "platform": "ios", "app": "1.2.0", "rev": 3, "changed": true, "updatedAt": 1789983080,
+  "save": { "format": 1, "player": "…", "updatedAt": 1789983080,
+            "sections": { "progress": { "v": 1, "data": { "level": 12 } }, "wallet": { "v": 2, "data": { "soft": 400 } } } } }
+```
+
+`rev` is the revision the game holds (0: never synchronized), `save` goes only when `changed`. The answer is
+`{ "rev": 4 }` when the game's save was stored or nothing was to be done, or `{ "rev": 5, "save": { … } }` when the
+service's copy wins and the game has to take it: the save was edited on the portal, or the game holds an older
+revision and has no changes of its own. A save is at most 256 KB.

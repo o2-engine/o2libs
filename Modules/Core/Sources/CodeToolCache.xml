@@ -25,7 +25,7 @@
 							<typedefs />
 							<usings />
 							<baseClasses>
-								<class name="IObject" protection="0" />
+								<class name="Singleton&lt;PlayerIdentity&gt;" protection="0" />
 							</baseClasses>
 						</section>
 					</sections>
@@ -50,6 +50,44 @@
 							<usings />
 							<baseClasses>
 								<class name="ISerializable" protection="0" />
+							</baseClasses>
+						</section>
+					</sections>
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/Core/Sources/o2libs/Core/ServiceTransport.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections>
+						<section name="ServiceResponse" fullname="o2libs::ServiceResponse" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses />
+						</section>
+						<section name="IServiceTransport" fullname="o2libs::IServiceTransport" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="RefCounterable" protection="0" />
+							</baseClasses>
+						</section>
+						<section name="HttpServiceTransport" fullname="o2libs::HttpServiceTransport" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="IServiceTransport" protection="0" />
 							</baseClasses>
 						</section>
 					</sections>
@@ -105,7 +143,7 @@
 							<typedefs />
 							<usings />
 							<baseClasses>
-								<class name="IObject" protection="0" />
+								<class name="Singleton&lt;Storage&gt;" protection="0" />
 							</baseClasses>
 						</section>
 					</sections>

@@ -20,8 +20,8 @@ namespace
 
     struct BackendGuard
     {
-        BackendGuard(const Ref<IStorageBackend>& backend) { Storage::SetBackend(backend); PlayerIdentity::Reset(); }
-        ~BackendGuard() { Storage::SetBackend(nullptr); PlayerIdentity::Reset(); }
+        BackendGuard(const Ref<IStorageBackend>& backend) { o2Storage.SetBackend(backend); o2PlayerIdentity.Reset(); }
+        ~BackendGuard() { o2Storage.SetBackend(nullptr); o2PlayerIdentity.Reset(); }
     };
 }
 
@@ -29,20 +29,20 @@ TEST(Storage, MemoryBackendKeepsValues)
 {
     BackendGuard guard(mmake<MemoryStorageBackend>());
 
-    EXPECT_FALSE(Storage::Has("a"));
-    EXPECT_EQ(Storage::Get("a", "fallback"), String("fallback"));
+    EXPECT_FALSE(o2Storage.Has("a"));
+    EXPECT_EQ(o2Storage.Get("a", "fallback"), String("fallback"));
 
-    Storage::Set("a", "1");
-    Storage::Set("b.x", "2");
-    Storage::Set("b.y", "3");
+    o2Storage.Set("a", "1");
+    o2Storage.Set("b.x", "2");
+    o2Storage.Set("b.y", "3");
 
-    EXPECT_TRUE(Storage::Has("a"));
-    EXPECT_EQ(Storage::Get("a"), String("1"));
-    EXPECT_EQ(Storage::GetKeys("b.").Count(), 2);
+    EXPECT_TRUE(o2Storage.Has("a"));
+    EXPECT_EQ(o2Storage.Get("a"), String("1"));
+    EXPECT_EQ(o2Storage.GetKeys("b.").Count(), 2);
 
-    Storage::Remove("b.x");
-    EXPECT_EQ(Storage::GetKeys("b.").Count(), 1);
-    EXPECT_FALSE(Storage::Has("b.x"));
+    o2Storage.Remove("b.x");
+    EXPECT_EQ(o2Storage.GetKeys("b.").Count(), 1);
+    EXPECT_FALSE(o2Storage.Has("b.x"));
 }
 
 TEST(Storage, FileBackendSurvivesReopen)
@@ -96,26 +96,26 @@ TEST(PlayerIdentity, IsCreatedOnceAndKept)
     auto backend = mmake<MemoryStorageBackend>();
     BackendGuard guard(backend);
 
-    String id = PlayerIdentity::GetId();
+    String id = o2PlayerIdentity.GetId();
     EXPECT_FALSE(id.IsEmpty());
-    EXPECT_TRUE(PlayerIdentity::IsNew());
-    EXPECT_EQ(PlayerIdentity::GetId(), id);
+    EXPECT_TRUE(o2PlayerIdentity.IsNew());
+    EXPECT_EQ(o2PlayerIdentity.GetId(), id);
 
     // The next run
-    PlayerIdentity::Reset();
-    EXPECT_EQ(PlayerIdentity::GetId(), id);
-    EXPECT_FALSE(PlayerIdentity::IsNew());
+    o2PlayerIdentity.Reset();
+    EXPECT_EQ(o2PlayerIdentity.GetId(), id);
+    EXPECT_FALSE(o2PlayerIdentity.IsNew());
 }
 
 TEST(PlayerIdentity, GameAccountReplacesIt)
 {
     BackendGuard guard(mmake<MemoryStorageBackend>());
 
-    PlayerIdentity::GetId();
-    PlayerIdentity::SetId("account-42");
+    o2PlayerIdentity.GetId();
+    o2PlayerIdentity.SetId("account-42");
 
-    PlayerIdentity::Reset();
-    EXPECT_EQ(PlayerIdentity::GetId(), String("account-42"));
+    o2PlayerIdentity.Reset();
+    EXPECT_EQ(o2PlayerIdentity.GetId(), String("account-42"));
 }
 
 TEST(PlayerIdentity, TwoInstallsDiffer)
@@ -123,11 +123,11 @@ TEST(PlayerIdentity, TwoInstallsDiffer)
     String first, second;
     {
         BackendGuard guard(mmake<MemoryStorageBackend>());
-        first = PlayerIdentity::GetId();
+        first = o2PlayerIdentity.GetId();
     }
     {
         BackendGuard guard(mmake<MemoryStorageBackend>());
-        second = PlayerIdentity::GetId();
+        second = o2PlayerIdentity.GetId();
     }
 
     EXPECT_NE(first, second);

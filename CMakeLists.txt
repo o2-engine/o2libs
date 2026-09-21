@@ -28,5 +28,6 @@ endif()
 #   RemoteConfig -> O2LIBS_REMOTE_CONFIG, target o2libsRemoteConfig
 o2libs_declare_module(Core          OPTION O2LIBS_CORE          DESCRIPTION "Player identity, key-value storage, service settings")
 o2libs_declare_module(RemoteConfig  OPTION O2LIBS_REMOTE_CONFIG DESCRIPTION "Remote configs and A/B tests client" DEPENDS Core)
+o2libs_declare_module(Saves         OPTION O2LIBS_SAVES         DESCRIPTION "Player saves: modular, local, synchronized with the service" DEPENDS Core)
 
 o2libs_finalize()

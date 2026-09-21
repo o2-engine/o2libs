@@ -1,56 +1,42 @@
 #pragma once
 
-#include "o2/Utils/Basic/IObject.h"
+#include "o2/Utils/Singleton.h"
 #include "o2/Utils/Types/String.h"
 
 using namespace o2;
 
+// Player identity access macros
+#define o2PlayerIdentity o2libs::PlayerIdentity::Instance()
+
 namespace o2libs
 {
-    // -------------------------------------------------------------------------------------------
-    // Who is playing, as far as the services are concerned: a random id made on the first run and
-    // kept in the storage. A game with its own accounts replaces it. o2libs.PlayerIdentity in scripts
-    // -------------------------------------------------------------------------------------------
-    class PlayerIdentity: public IObject
+    // -----------------------------------------------------------------------------------------
+    // Player identity: who is playing, as far as the services are concerned. A random id made on
+    // the first run and kept in the storage; a game with its own accounts replaces it
+    // -----------------------------------------------------------------------------------------
+    class PlayerIdentity: public Singleton<PlayerIdentity>
     {
     public:
-        // Returns the player id, creating and storing one on the first call @SCRIPTABLE
-        static String GetId();
+        // Default constructor
+        explicit PlayerIdentity(RefCounter* refCounter);
 
-        // Replaces the player id, e.g. with the game's own account id @SCRIPTABLE
-        static void SetId(const String& id);
+        // Destructor
+        ~PlayerIdentity();
 
-        // Returns true when the id was created in this run: a new install @SCRIPTABLE
-        static bool IsNew();
+        // Returns the player id; creates and stores one on the first call
+        const String& GetId();
 
-        // Forgets the cached id so that the next GetId reads the storage again
-        static void Reset();
+        // Replaces the player id, e.g. with the id of the game's own account
+        void SetId(const String& id);
 
-        IOBJECT(PlayerIdentity);
+        // Returns true when the id was created in this run, i.e. this is a new install
+        bool IsNew();
 
-    private:
-        static String mId;
-        static bool   mIsNew;
+        // Forgets the cached id, the next GetId reads the storage again
+        void Reset();
+
+    protected:
+        String mId;            // Cached player id
+        bool   mIsNew = false; // Is the id created in this run
     };
 }
-// --- META ---
-
-CLASS_BASES_META(o2libs::PlayerIdentity)
-{
-    BASE_CLASS(o2::IObject);
-}
-END_META;
-CLASS_FIELDS_META(o2libs::PlayerIdentity)
-{
-}
-END_META;
-CLASS_METHODS_META(o2libs::PlayerIdentity)
-{
-
-    FUNCTION().PUBLIC().SCRIPTABLE_ATTRIBUTE().SIGNATURE_STATIC(String, GetId);
-    FUNCTION().PUBLIC().SCRIPTABLE_ATTRIBUTE().SIGNATURE_STATIC(void, SetId, const String&);
-    FUNCTION().PUBLIC().SCRIPTABLE_ATTRIBUTE().SIGNATURE_STATIC(bool, IsNew);
-    FUNCTION().PUBLIC().SIGNATURE_STATIC(void, Reset);
-}
-END_META;
-// --- END META ---

@@ -2,6 +2,9 @@
 #include "o2/Utils/FileSystem/FileSystem.h"
 #include "o2libs/Core/JsonMergePatch.h"
 #include "o2libs/Core/PlayerIdentity.h"
+#include "o2/Utils/Coroutines/Coroutines.h"
+#include "o2/Utils/Jobs/JobSystem.h"
+#include "o2/Utils/Threading/Thread.h"
 #include "o2libs/RemoteConfig/RemoteConfig.h"
 #include <gtest/gtest.h>
 
@@ -10,11 +13,25 @@ using namespace o2libs;
 
 namespace
 {
+    // One frame of the application, as far as coroutines go: resumptions may come from the workers
+    void PumpCoroutines()
+    {
+        o2Jobs.ExecuteMainThreadJobs(-1.0f);
+        o2Coroutines.OnNewFrame();
+        Thread::SleepForMilliseconds(1);
+    }
+
     // Answers from a table, on Flush - as the network does, later than the call
-    class FakeTransport: public IRemoteConfigTransport
+    class FakeTransport: public IServiceTransport
     {
     public:
-        struct Call { String method, url, body; Callback callback; };
+        struct Call
+        {
+            String method, url, body;
+
+            Signal                           done;
+            std::shared_ptr<ServiceResponse> response = std::make_shared<ServiceResponse>();
+        };
 
         Map<String, String> answers;   // url -> body, 200
         Map<String, int>    failures;  // url -> status (0: no answer)
@@ -23,20 +40,34 @@ namespace
 
         explicit FakeTransport(RefCounter* refCounter) { SetRefCounter(refCounter); }
 
-        void Post(const String& url, const String& body, const Callback& onCompleted) override
+        Coroutine<ServiceResponse> Post(const String& url, const String& body) override { return Add("POST", url, body); }
+        Coroutine<ServiceResponse> Get(const String& url) override { return Add("GET", url, String()); }
+
+        Coroutine<ServiceResponse> Add(const String& method, const String& url, const String& body)
         {
-            pending.Add({ "POST", url, body, onCompleted });
+            Call call;
+            call.method = method;
+            call.url = url;
+            call.body = body;
+            pending.Add(call);
+
+            return [](Signal done, std::shared_ptr<ServiceResponse> response) -> Coroutine<ServiceResponse>
+            {
+                co_await done;
+                co_return *response;
+            }(call.done, call.response);
         }
 
-        void Get(const String& url, const Callback& onCompleted) override
-        {
-            pending.Add({ "GET", url, String(), onCompleted });
-        }
-
+        // Answers everything asked, and what is asked in return, until it has been quiet for a while
         void Flush()
         {
-            while (!pending.IsEmpty())
+            for (int quiet = 0; quiet < 25; quiet++)
             {
+                PumpCoroutines();
+                if (pending.IsEmpty())
+                    continue;
+
+                quiet = 0;
                 auto calls = pending;
                 pending.Clear();
 
@@ -45,11 +76,17 @@ namespace
                     log.Add(call);
 
                     if (failures.ContainsKey(call.url))
-                        call.callback(false, failures[call.url], String());
+                        call.response->status = failures[call.url];
                     else if (answers.ContainsKey(call.url))
-                        call.callback(true, 200, answers[call.url]);
+                    {
+                        call.response->ok = true;
+                        call.response->status = 200;
+                        call.response->body = answers[call.url];
+                    }
                     else
-                        call.callback(false, 404, String());
+                        call.response->status = 404;
+
+                    call.done.Synchronize();
                 }
             }
         }
@@ -94,13 +131,13 @@ namespace
         Ref<MemoryStorageBackend> storage = mmake<MemoryStorageBackend>();
         Ref<MemoryStorageBackend> identity = mmake<MemoryStorageBackend>();
         double                    now = 1000000;
-        Ref<RemoteConfigClient>   client;
+        Ref<RemoteConfig>         client;
         int                       changes = 0;
 
         Fixture()
         {
-            Storage::SetBackend(identity);
-            PlayerIdentity::Reset();
+            o2Storage.SetBackend(identity);
+            o2PlayerIdentity.Reset();
 
             Document(idBase, R"({"levels": 30, "price": 4.99, "rewards": {"coins": 500, "skin": "neon"}, "list": [1, {"x": 7}]})");
             Document(idPatchA, R"({"price": 2.49})");
@@ -113,8 +150,16 @@ namespace
 
         ~Fixture()
         {
-            Storage::SetBackend(nullptr);
-            PlayerIdentity::Reset();
+            Drop();
+            o2Storage.SetBackend(nullptr);
+            o2PlayerIdentity.Reset();
+        }
+
+        // The object is a singleton: the previous one goes before the next one comes
+        void Drop()
+        {
+            if (client)
+                RemoteConfig::DestroySingleton(client);
         }
 
         // A new run of the game over the same storage
@@ -126,9 +171,10 @@ namespace
             settings.appVersion = "1.2.0";
             settings.build = 12;
 
-            client = mmake<RemoteConfigClient>(transport, storage, [this]() { return now; });
+            Drop();
+            client = mmake<RemoteConfig>(transport, storage, [this]() { return now; });
             client->onChanged = [this]() { changes++; };
-            client->Init(settings);
+            client->Initialize(settings);
         }
 
         void Document(const char* id, const char* json)
@@ -143,10 +189,9 @@ namespace
 
         bool Fetch()
         {
-            int result = -1;
-            client->Fetch([&](bool ok) { result = ok ? 1 : 0; });
+            auto fetch = client->Fetch();
             transport->Flush();
-            return result == 1;
+            return fetch.IsDone() && fetch.GetResult();
         }
 
         String TwoTestsManifest() const
@@ -280,7 +325,7 @@ TEST(RemoteConfig, RequestCarriesPlayerVersionAndAttributes)
     ASSERT_TRUE(request.LoadFromData(f.transport->LastBody("/v1/fetch")));
 
     EXPECT_EQ(String(request.GetMember("key").GetString()), String("o2c_test"));
-    EXPECT_EQ(String(request.GetMember("player").GetString()), PlayerIdentity::GetId());
+    EXPECT_EQ(String(request.GetMember("player").GetString()), o2PlayerIdentity.GetId());
     EXPECT_EQ(String(request.GetMember("app").GetString()), String("1.2.0"));
     EXPECT_EQ((int)request.GetMember("build"), 12);
     EXPECT_FALSE(String(request.GetMember("platform").GetString()).IsEmpty());
@@ -481,13 +526,13 @@ TEST(RemoteConfig, ConcurrentFetchesShareOneRequest)
     Fixture f;
     f.Manifest(f.TwoTestsManifest());
 
-    int done = 0;
-    f.client->Fetch([&](bool ok) { done += ok ? 1 : 0; });
-    f.client->Fetch([&](bool ok) { done += ok ? 1 : 0; });
+    auto first = f.client->Fetch();
+    auto second = f.client->Fetch();
     EXPECT_TRUE(f.client->IsFetching());
     f.transport->Flush();
 
-    EXPECT_EQ(done, 2);
+    ASSERT_TRUE(first.IsDone() && second.IsDone());
+    EXPECT_TRUE(first.GetResult() && second.GetResult());
     EXPECT_EQ(f.transport->Count("POST", "/v1/fetch"), 1);
     EXPECT_FALSE(f.client->IsFetching());
 }
@@ -550,7 +595,7 @@ TEST(RemoteConfig, ExposureIsReportedOncePerExperimentAndGroup)
 
     DataDocument request;
     ASSERT_TRUE(request.LoadFromData(f.transport->LastBody("/v1/events")));
-    EXPECT_EQ(String(request.GetMember("player").GetString()), PlayerIdentity::GetId());
+    EXPECT_EQ(String(request.GetMember("player").GetString()), o2PlayerIdentity.GetId());
     ASSERT_EQ(request.GetMember("events").GetElementsCount(), 2);
 
     auto& event = request.GetMember("events").GetElement(0);
@@ -617,9 +662,13 @@ TEST(RemoteConfig, ClientDestroyedWithRequestInFlight)
     Fixture f;
     f.Manifest(f.TwoTestsManifest());
 
-    f.client->Fetch();
-    f.client = nullptr;
+    auto fetch = f.client->Fetch();
+    f.Drop();
+    ASSERT_EQ(f.client, nullptr);
     f.transport->Flush();
+
+    EXPECT_TRUE(fetch.IsDone());
+    EXPECT_FALSE(fetch.GetResult());
 
     SUCCEED();
 }
@@ -627,14 +676,15 @@ TEST(RemoteConfig, ClientDestroyedWithRequestInFlight)
 TEST(RemoteConfig, FetchBeforeInitFails)
 {
     Fixture f;
-    f.client = mmake<RemoteConfigClient>(f.transport, f.storage);
+    f.Drop();
+    f.client = mmake<RemoteConfig>(f.transport, f.storage);
 
-    bool called = false, result = true;
-    f.client->Fetch([&](bool ok) { called = true; result = ok; });
+    auto fetch = f.client->Fetch();
+    f.transport->Flush();
 
-    EXPECT_TRUE(called);
-    EXPECT_FALSE(result);
-    EXPECT_TRUE(f.transport->pending.IsEmpty());
+    ASSERT_TRUE(fetch.IsDone());
+    EXPECT_FALSE(fetch.GetResult());
+    EXPECT_EQ(f.transport->log.Count(), 0);
 }
 
 namespace
@@ -695,28 +745,39 @@ TEST(RemoteConfig, LocalOverrideBeatsTheServiceAndIsNotAnExposure)
     EXPECT_FALSE(f.client->HasConfig("only_local"));
 }
 
-TEST(RemoteConfig, FacadeServesTheGameClient)
+TEST(RemoteConfig, TheLastCreatedObjectIsTheSingleton)
 {
     Fixture f;
     f.Manifest(f.TwoTestsManifest());
     ASSERT_TRUE(f.Fetch());
 
-    RemoteConfig::SetClient(f.client);
-
-    int notified = 0;
-    RemoteConfig::OnChanged([&]() { notified++; });
-
-    EXPECT_TRUE(RemoteConfig::IsReady());
-    EXPECT_TRUE(RemoteConfig::Has("season_pass"));
-    EXPECT_FLOAT_EQ(RemoteConfig::GetNumber("season_pass", "price", 0), 2.49f);
-    EXPECT_EQ(RemoteConfig::GetString("season_pass", "price", "not a string"), String("not a string"));
-    EXPECT_FALSE(RemoteConfig::GetBool("season_pass", "levels", false));
-    EXPECT_EQ(RemoteConfig::GetGroup("price_test"), String("cheap"));
     EXPECT_EQ(&o2RemoteConfig, f.client.Get());
+    EXPECT_FLOAT_EQ(o2RemoteConfig.Get<float>("season_pass", "price", 0), 2.49f);
 
+    f.Drop();
+    EXPECT_FALSE(RemoteConfig::IsSingletonInitialzed());
+}
+
+#if IS_SCRIPTING_SUPPORTED
+TEST(RemoteConfig, ScriptsReachItAsOneObject)
+{
+    Fixture f;
+    f.Manifest(f.TwoTestsManifest());
+    ASSERT_TRUE(f.Fetch());
+
+    auto eval = [](const char* code) { return o2Scripts.Eval(code); };
+
+    EXPECT_TRUE(eval("o2libs.RemoteConfig.IsReady() && o2libs.RemoteConfig.Has('season_pass')").ToBool());
+    EXPECT_NEAR(eval("o2libs.RemoteConfig.GetNumber('season_pass', 'price', 0)").ToNumber(), 2.49, 0.001);
+    EXPECT_EQ(eval("o2libs.RemoteConfig.Get('season_pass').rewards.coins").ToNumber(), 750);
+    EXPECT_EQ(eval("o2libs.RemoteConfig.GetString('season_pass', 'price', 'not a string')").ToString(), String("not a string"));
+    EXPECT_EQ(eval("o2libs.RemoteConfig.GetGroup('price_test')").ToString(), String("cheap"));
+    EXPECT_TRUE(eval("o2libs.RemoteConfig.Get('nope') === undefined").ToBool());
+
+    eval("var __rcChanges = 0; o2libs.RemoteConfig.OnChanged(function() { __rcChanges++; });");
     f.Manifest(R"({"etag": "v2", "ttl": 600, "cdn": "http://cdn/c/p1", "configs": {"season_pass": ["ba5e"]}})");
     ASSERT_TRUE(f.Fetch());
-    EXPECT_EQ(notified, 1);
-
-    RemoteConfig::SetClient(nullptr);
+    EXPECT_EQ(eval("__rcChanges").ToNumber(), 1);
+    EXPECT_EQ(f.changes, 2);
 }
+#endif

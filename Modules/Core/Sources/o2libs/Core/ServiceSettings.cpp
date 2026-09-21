@@ -25,7 +25,7 @@ namespace o2libs
 
         Deserialize(doc);
 
-        while (url.EndsWith("/"))
+        while (!url.IsEmpty() && url.EndsWith("/"))
             url = url.SubStr(0, url.Length() - 1);
 
         return true;

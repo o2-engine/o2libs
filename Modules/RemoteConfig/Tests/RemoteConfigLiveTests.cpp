@@ -1,7 +1,8 @@
 #include "o2/stdafx.h"
 #include "o2/Network/NetworkSystem.h"
 #include "o2libs/Core/PlayerIdentity.h"
-#include "o2libs/RemoteConfig/RemoteConfigClient.h"
+#include "o2/Utils/Jobs/JobSystem.h"
+#include "o2libs/RemoteConfig/RemoteConfig.h"
 #include <gtest/gtest.h>
 
 #include <chrono>
@@ -21,6 +22,8 @@ namespace
         for (int i = 0; i < seconds*100 && !done(); i++)
         {
             o2Network.Update(0.01f);
+            o2Jobs.ExecuteMainThreadJobs(-1.0f);
+            o2Coroutines.OnNewFrame();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
@@ -35,10 +38,10 @@ TEST(RemoteConfigLive, FetchesFromARunningService)
     if (!url || !key)
         GTEST_SKIP() << "O2LIBS_LIVE_URL / O2LIBS_LIVE_KEY are not set";
 
-    Storage::SetBackend(mmake<MemoryStorageBackend>());
-    PlayerIdentity::Reset();
+    o2Storage.SetBackend(mmake<MemoryStorageBackend>());
+    o2PlayerIdentity.Reset();
     if (const char* player = std::getenv("O2LIBS_LIVE_PLAYER"))
-        PlayerIdentity::SetId(player);
+        o2PlayerIdentity.SetId(player);
 
     ServiceSettings settings;
     settings.url = url;
@@ -46,15 +49,14 @@ TEST(RemoteConfigLive, FetchesFromARunningService)
     settings.appVersion = "1.2.0";
 
     auto storage = mmake<MemoryStorageBackend>();
-    auto client = mmake<RemoteConfigClient>(nullptr, storage);
+    auto client = mmake<RemoteConfig>(nullptr, storage);
     client->exposureFlushPeriod = 0.1f;
     client->SetAttribute("level", 7.0);
-    client->Init(settings);
+    client->Initialize(settings);
 
-    int result = -1;
-    client->Fetch([&](bool ok) { result = ok ? 1 : 0; });
-    ASSERT_TRUE(Pump([&]() { return result >= 0; }));
-    ASSERT_EQ(result, 1);
+    auto fetch = client->Fetch();
+    ASSERT_TRUE(Pump([&]() { return fetch.IsDone(); }));
+    ASSERT_TRUE(fetch.GetResult());
 
     // The project of live-check.ts: two experiments at 100% with one non-control group each
     EXPECT_EQ(client->Get<int>("season_pass", "levels", 0), 30);
@@ -65,10 +67,9 @@ TEST(RemoteConfigLive, FetchesFromARunningService)
     EXPECT_EQ(client->Get<int>("economy", "multiplier", 0), 2) << "the rule for level >= 5";
 
     // The second fetch is answered "unchanged"
-    result = -1;
-    client->Fetch([&](bool ok) { result = ok ? 1 : 0; });
-    ASSERT_TRUE(Pump([&]() { return result >= 0; }));
-    EXPECT_EQ(result, 1);
+    auto again = client->Fetch();
+    ASSERT_TRUE(Pump([&]() { return again.IsDone(); }));
+    EXPECT_TRUE(again.GetResult());
 
     // Exposures reach the service
     client->Update(1.0f);
@@ -79,11 +80,13 @@ TEST(RemoteConfigLive, FetchesFromARunningService)
     EXPECT_EQ(events, String("[]"));
 
     // The next run needs no network
-    auto offline = mmake<RemoteConfigClient>(nullptr, storage);
-    offline->Init(settings);
+    RemoteConfig::DestroySingleton(client);
+    auto offline = mmake<RemoteConfig>(nullptr, storage);
+    offline->Initialize(settings);
     EXPECT_TRUE(offline->IsReady());
     EXPECT_EQ(offline->Get<int>("season_pass", "rewards.coins", 0), 750);
 
-    Storage::SetBackend(nullptr);
-    PlayerIdentity::Reset();
+    RemoteConfig::DestroySingleton(offline);
+    o2Storage.SetBackend(nullptr);
+    o2PlayerIdentity.Reset();
 }

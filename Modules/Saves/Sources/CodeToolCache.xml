@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<files>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/Saves/Sources/o2libs/Saves/PlayerSaves.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections>
+						<section name="PlayerSaves" fullname="o2libs::PlayerSaves" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections>
+								<section name="Section" fullname="o2libs::PlayerSaves::Section" isClass="true" templates="" protection="2" attributeCommentDef="" attributeShortDef="">
+									<sections />
+									<typedefs />
+									<usings />
+									<baseClasses />
+								</section>
+							</sections>
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="Singleton&lt;PlayerSaves&gt;" protection="0" />
+							</baseClasses>
+						</section>
+					</sections>
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+	<file path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/Saves/Sources/o2libs/Saves/SaveSection.h">
+		<globalNamespace name="" fullname="">
+			<sections>
+				<section name="o2libs" fullname="o2libs">
+					<sections>
+						<section name="SaveSection" fullname="o2libs::SaveSection" isClass="true" templates="" protection="0" attributeCommentDef="" attributeShortDef="">
+							<sections />
+							<typedefs />
+							<usings />
+							<baseClasses>
+								<class name="ISerializable" protection="0" />
+								<class name="RefCounterable" protection="0" />
+							</baseClasses>
+						</section>
+					</sections>
+					<typedefs />
+					<usings />
+				</section>
+			</sections>
+			<typedefs />
+			<usings>
+				<using name="o2" />
+			</usings>
+		</globalNamespace>
+	</file>
+</files>
+<parentProjects>
+	<project path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
+	<project path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/Modules/Core/Sources/CodeToolCache.xml" />
+	<project path="/Users/andreizenkovich/work/zenkovich.space/o2-Template/o2libs/../o2/Framework/Sources/o2/CodeToolCache.xml" />
+</parentProjects>
